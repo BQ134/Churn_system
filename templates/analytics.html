@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Churn Prediction System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            color: #222;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1.2rem 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .navbar-logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .navbar-logo i {
+            color: white;
+            font-size: 1.3rem;
+        }
+        .navbar h1 {
+            color: #333;
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .nav-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+        .logout-link {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        .logout-link:hover {
+            box-shadow: 0 12px 30px rgba(220, 53, 69, 0.5);
+        }
+        .container {
+            max-width: 950px;
+            margin: 3rem auto;
+            background: rgba(255,255,255,0.98);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.08);
+            padding: 2.5rem 2rem;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+        }
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>Churn Prediction System</h1>
+        </div>
+        <div class="navbar-nav">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="{{ url_for('predict') }}" class="nav-link">
+                <i class="fas fa-calculator"></i>
+                Predict
+            </a>
+            <a href="{{ url_for('analytics') }}" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                Analytics
+            </a>
+            <a href="{{ url_for('reports') }}" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                Reports
+            </a>
+            <a href="{{ url_for('user_profile') }}" class="nav-link">
+                <i class="fas fa-user"></i>
+                Profile
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Analytics & Reports</h2>
+        <div id="summary-stats" style="display:flex; justify-content:space-around; margin-bottom:2.5rem; flex-wrap:wrap; gap:2rem;">
+            <div style="background:#f8f9fa; border-radius:16px; padding:1.5rem 2rem; min-width:180px; text-align:center; box-shadow:0 2px 8px rgba(102,126,234,0.08);">
+                <div style="font-size:2.1rem; font-weight:700; color:#667eea;" id="stat-total">-</div>
+                <div style="color:#666; font-size:1.1rem;">Total Predictions</div>
+            </div>
+            <div style="background:#f8f9fa; border-radius:16px; padding:1.5rem 2rem; min-width:180px; text-align:center; box-shadow:0 2px 8px rgba(102,126,234,0.08);">
+                <div style="font-size:2.1rem; font-weight:700; color:#dc3545;" id="stat-churn-rate">-</div>
+                <div style="color:#666; font-size:1.1rem;">Churn Rate (%)</div>
+            </div>
+            <div style="background:#f8f9fa; border-radius:16px; padding:1.5rem 2rem; min-width:180px; text-align:center; box-shadow:0 2px 8px rgba(102,126,234,0.08);">
+                <div style="font-size:2.1rem; font-weight:700; color:#764ba2;" id="stat-avg-revenue">-</div>
+                <div style="color:#666; font-size:1.1rem;">Avg. Revenue</div>
+            </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:2.5rem; justify-content:center; align-items:flex-start; margin-top:2.5rem;">
+            <div style="flex:1; min-width:320px; max-width:420px; background:#fff; border-radius:18px; box-shadow:0 2px 8px rgba(102,126,234,0.08); padding:2rem;">
+                <h3 style="text-align:center; color:#dc3545; margin-bottom:1.2rem;">Churn vs Stay (Pie)</h3>
+                <canvas id="pieChart" height="220"></canvas>
+            </div>
+            <div style="flex:2; min-width:320px; max-width:600px; background:#fff; border-radius:18px; box-shadow:0 2px 8px rgba(102,126,234,0.08); padding:2rem;">
+                <h3 style="text-align:center; color:#667eea; margin-bottom:1.2rem;">Feature Averages (Churned vs Stayed)</h3>
+                <canvas id="featureBarChart" height="220"></canvas>
+            </div>
+            <div style="flex:1; min-width:320px; max-width:420px; background:#fff; border-radius:18px; box-shadow:0 2px 8px rgba(102,126,234,0.08); padding:2rem;">
+                <h3 style="text-align:center; color:#764ba2; margin-bottom:1.2rem;">Feature Importance</h3>
+                <canvas id="featureImportanceChart" height="220"></canvas>
+                <div id="feature-importance-error" style="color:#dc3545; text-align:center; margin-top:1rem; display:none;"></div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>&copy; 2024 Churn Prediction System. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Fetch and render summary stats
+    function loadSummaryStats() {
+        fetch('/api/analytics/summary')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return;
+                document.getElementById('stat-total').textContent = data.total;
+                document.getElementById('stat-churn-rate').textContent = data.churn_rate.toFixed(1);
+                document.getElementById('stat-avg-revenue').textContent = data.avg_revenue ? data.avg_revenue.toFixed(2) : '-';
+            });
+    }
+    // Pie chart for churn vs stay
+    function loadPieChart() {
+        fetch('/api/analytics/pie')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return;
+                const ctx = document.getElementById('pieChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Churned', 'Stayed'],
+                        datasets: [{
+                            data: [data.churned, data.stayed],
+                            backgroundColor: ['#dc3545', '#28a745'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: false }
+                        }
+                    }
+                });
+            });
+    }
+    // Bar chart for feature averages
+    function loadFeatureBarChart() {
+        fetch('/api/analytics/feature-averages')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return;
+                const features = ['revenue','regularity','data_volume','average_revenue_per_user','frequence','frequence_rech','total_amount_spent'];
+                const labels = ['Revenue','Regularity','Data Volume','Avg Revenue/User','Frequency','Recharge Freq','Total Spent'];
+                const churned = features.map(f => data.churned[f] || 0);
+                const stayed = features.map(f => data.stayed[f] || 0);
+                const ctx = document.getElementById('featureBarChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Churned',
+                                data: churned,
+                                backgroundColor: 'rgba(220,53,69,0.7)'
+                            },
+                            {
+                                label: 'Stayed',
+                                data: stayed,
+                                backgroundColor: 'rgba(40,167,69,0.7)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            });
+    }
+    // Feature importance bar chart
+    function loadFeatureImportanceChart() {
+        fetch('/api/analytics/feature-importance')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('feature-importance-error').textContent = data.error;
+                    document.getElementById('feature-importance-error').style.display = 'block';
+                    return;
+                }
+                document.getElementById('feature-importance-error').style.display = 'none';
+                const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.features,
+                        datasets: [{
+                            label: 'Importance',
+                            data: data.importances,
+                            backgroundColor: 'rgba(118,75,162,0.7)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            });
+    }
+    // Load all analytics when the page loads
+    window.addEventListener('DOMContentLoaded', function() {
+        loadSummaryStats();
+        loadPieChart();
+        loadFeatureBarChart();
+        loadFeatureImportanceChart();
+    });
+    </script>
+</body>
+</html> 

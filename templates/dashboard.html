@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Churn Prediction System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Enhanced animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.08;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 15px,
+                rgba(255, 255, 255, 0.1) 15px,
+                rgba(255, 255, 255, 0.1) 30px
+            );
+            animation: move 25s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Enhanced navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1.2rem 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .navbar-logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .navbar-logo i {
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .navbar h1 {
+            color: #333;
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+        .logout-link {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-link:hover {
+            box-shadow: 0 12px 30px rgba(220, 53, 69, 0.5);
+        }
+
+        .container {
+            width: 100%;
+            margin: 1.2rem auto;
+            padding: 0 1rem;
+            max-width: 950px;
+        }
+
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1.2rem 1rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            margin-bottom: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(15px);
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            animation: shine 4s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .welcome-header {
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-header h2 {
+            color: #333;
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-header p {
+            color: #666;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0.7rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-icon i {
+            color: white;
+            font-size: 1.8rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0.7rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.7rem;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.13);
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover .action-icon {
+            transform: scale(1.1);
+        }
+
+        .action-icon i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            margin-bottom: 0.7rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.1rem;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.13);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+        /* New Dashboard Sections */
+        .section-title {
+            color: #333;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title i {
+            font-size: 1.2rem;
+        }
+
+        /* System Status Section */
+        .status-section {
+            margin-bottom: 1.2rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0.7rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .status-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .status-icon.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .status-icon.info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        }
+
+        .status-icon i {
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .status-content h4 {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .status-content p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .status-badge.info {
+            background: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+
+        .status-badge.error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .status-icon.error {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        /* Quick Stats Section */
+        .quick-stats-section {
+            margin-bottom: 1.2rem;
+        }
+
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-stat-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0.7rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            transition: all 0.3s ease;
+        }
+
+        .quick-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .quick-stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .quick-stat-header i {
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+        .quick-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .quick-stat-change.positive {
+            color: #28a745;
+        }
+
+        .quick-stat-change.negative {
+            color: #dc3545;
+        }
+
+        .quick-stat-change i {
+            font-size: 0.8rem;
+        }
+
+        /* Activity Feed Section */
+        .activity-section {
+            margin-bottom: 1.2rem;
+        }
+
+        .activity-feed {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            overflow: hidden;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0.7rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(102, 126, 234, 0.02);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon i {
+            color: white;
+            font-size: 1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .activity-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .activity-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .activity-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .activity-status.high-risk {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .activity-status.success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .activity-status.info {
+            background: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+
+        /* Announcements Section */
+        .announcements-section {
+            margin-bottom: 1.2rem;
+        }
+
+        .announcements-list {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            overflow: hidden;
+        }
+
+        .announcement-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0.7rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-item:hover {
+            background: rgba(102, 126, 234, 0.02);
+        }
+
+        .announcement-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .announcement-icon i {
+            color: white;
+            font-size: 1rem;
+        }
+
+        .announcement-content {
+            flex: 1;
+        }
+
+        .announcement-title {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .announcement-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .announcement-date {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .announcement-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .announcement-badge.new {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .announcement-badge.update {
+            background: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+
+            .navbar h1 {
+                font-size: 1.3rem;
+            }
+
+            .container {
+                padding: 0 1.5rem;
+                margin: 2rem auto;
+            }
+
+            .welcome-section {
+                padding: 2.5rem 2rem;
+            }
+
+            .welcome-header h2 {
+                font-size: 2.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .stat-card, .action-card {
+                padding: 2rem;
+            }
+
+            /* New sections responsive */
+            .status-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .quick-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .status-card, .quick-stat-card {
+                padding: 1.5rem;
+            }
+
+            .activity-item, .announcement-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.8rem;
+            }
+
+            .activity-status, .announcement-badge {
+                align-self: center;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .welcome-section {
+                padding: 2rem 1.5rem;
+            }
+
+            .welcome-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .stat-card, .action-card {
+                padding: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .action-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="navbar-logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>Churn Prediction System</h1>
+        </div>
+        <div class="navbar-nav">
+            <a href="{{ url_for('predict') }}" class="nav-link">
+                <i class="fas fa-calculator"></i>
+                Predict
+            </a>
+            <a href="{{ url_for('user_profile') }}" class="nav-link">
+                <i class="fas fa-user"></i>
+                Profile
+            </a>
+            <a href="{{ url_for('analytics') }}" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                Analytics
+            </a>
+            <a href="{{ url_for('reports') }}" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                Reports
+            </a>
+            {% if user.username == 'admin' %}
+            <a href="{{ url_for('admin_users') }}" class="nav-link">
+                <i class="fas fa-users-cog"></i>
+                Admin
+            </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Welcome/User Profile Card -->
+        <section class="welcome-section">
+            <div class="welcome-header">
+                <h2>Welcome, {{ user.username }}! 👋</h2>
+                <p>Your comprehensive dashboard for customer churn prediction and analysis. Monitor key metrics and make data-driven decisions to improve customer retention.</p>
+            </div>
+            <div style="display:flex;justify-content:center;gap:2.5rem;margin-top:1.2rem;flex-wrap:wrap;">
+                <div style="background:#f8f9fa;border-radius:14px;padding:1.2rem 2.2rem;min-width:220px;box-shadow:0 2px 8px rgba(102,126,234,0.08);text-align:left;">
+                    <div style="font-size:1.2rem;font-weight:600;color:#667eea;margin-bottom:0.3rem;">
+                        <i class="fas fa-user-circle"></i> {{ user.username }}
+                    </div>
+                    <div style="color:#666;font-size:1rem;margin-bottom:0.2rem;">
+                        <i class="fas fa-user-tag"></i> Role: <b>{{ user.role if user.role else ('Admin' if user.username == 'admin' else 'User') }}</b>
+                    </div>
+                    <div style="color:#666;font-size:1rem;margin-bottom:0.2rem;">
+                        <i class="fas fa-clock"></i> Last login: <b>{{ user.last_login if user.last_login else 'N/A' }}</b>
+                    </div>
+                    <a href="{{ url_for('user_profile') }}" style="color:#764ba2;font-weight:600;text-decoration:underline;font-size:0.98rem;">View Profile</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions Panel -->
+        <div class="actions-grid">
+            <div class="action-card" onclick="window.location.href='{{ url_for('predict') }}'">
+                <div class="action-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3 class="action-title">Predict Churn</h3>
+                <p class="action-description">Analyze customer data and predict the likelihood of churn using our advanced machine learning model.</p>
+                <a href="{{ url_for('predict') }}" class="action-btn">
+                    <i class="fas fa-arrow-right"></i> Start Prediction
+                </a>
+            </div>
+            <div class="action-card" onclick="window.location.href='{{ url_for('reports') }}'">
+                <div class="action-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="action-title">View Reports</h3>
+                <p class="action-description">Access all your prediction reports, filter by date or status, and download as needed.</p>
+                <a href="{{ url_for('reports') }}" class="action-btn">
+                    <i class="fas fa-arrow-right"></i> View Reports
+                </a>
+            </div>
+            <div class="action-card" onclick="window.location.href='{{ url_for('analytics') }}'">
+                <div class="action-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="action-title">Analytics</h3>
+                <p class="action-description">Explore detailed analytics, trends, and insights about customer behavior and churn patterns.</p>
+                <a class="action-btn" href="{{ url_for('analytics') }}">
+                    <i class="fas fa-arrow-right"></i> View Analytics
+                </a>
+            </div>
+            {% if user.username == 'admin' %}
+            <div class="action-card" onclick="window.location.href='{{ url_for('admin_users') }}'">
+                <div class="action-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <h3 class="action-title">Manage Users</h3>
+                <p class="action-description">Add, remove, or update users and manage system access (admin only).</p>
+                <a href="{{ url_for('admin_users') }}" class="action-btn">
+                    <i class="fas fa-arrow-right"></i> Manage Users
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Placeholders for next features -->
+        <div id="announcements-section" style="margin-bottom:1.2rem;"></div>
+        <div id="recent-activity-feed" style="margin-bottom:1.2rem;"></div>
+        <div id="recent-predictions-table" style="margin-bottom:1.2rem;"></div>
+
+        <!-- System Status Overview -->
+        <section class="status-section">
+            <h3 class="section-title">
+                <i class="fas fa-server"></i>
+                System Status
+            </h3>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-content">
+                        <h4>ML Model</h4>
+                        <p>Operational</p>
+                        <span class="status-badge success">Active</span>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon success">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="status-content">
+                        <h4>Database</h4>
+                        <p>Connected</p>
+                        <span class="status-badge success">Online</span>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon success">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="status-content">
+                        <h4>Security</h4>
+                        <p>Protected</p>
+                        <span class="status-badge success">Secure</span>
+                    </div>
+                </div>
+                <div class="status-card">
+                    <div class="status-icon info">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="status-content">
+                        <h4>Uptime</h4>
+                        <p>99.9%</p>
+                        <span class="status-badge info">Stable</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activity Feed -->
+        <section class="activity-section">
+            <h3 class="section-title" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);">
+                <i class="fas fa-history"></i>
+                Recent Activity
+            </h3>
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">New prediction completed</div>
+                        <div class="activity-desc">Customer ID: CUST-2024-001 - High churn risk detected</div>
+                        <div class="activity-time">2 minutes ago</div>
+                    </div>
+                    <div class="activity-status high-risk">High Risk</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Report generated</div>
+                        <div class="activity-desc">Monthly churn analysis report for March 2024</div>
+                        <div class="activity-time">15 minutes ago</div>
+                    </div>
+                    <div class="activity-status success">Completed</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">New user registered</div>
+                        <div class="activity-desc">Analyst account created for Sarah Johnson</div>
+                        <div class="activity-time">1 hour ago</div>
+                    </div>
+                    <div class="activity-status info">New</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">System maintenance</div>
+                        <div class="activity-desc">Model retraining completed successfully</div>
+                        <div class="activity-time">3 hours ago</div>
+                    </div>
+                    <div class="activity-status success">Completed</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Churn Prediction System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Add smooth scroll behavior
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // Add hover effects for cards
+        document.querySelectorAll('.stat-card, .action-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Load real activity data from API
+        function loadRecentActivity() {
+            fetch('/api/dashboard/recent-activity')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error fetching recent activity:', data.error);
+                        return;
+                    }
+
+                    const activityFeed = document.querySelector('.activity-feed');
+                    if (!activityFeed) return;
+
+                    // Clear existing static items
+                    activityFeed.innerHTML = '';
+
+                    // Add real activities
+                    data.activities.forEach(activity => {
+                        const activityItem = document.createElement('div');
+                        activityItem.className = 'activity-item';
+                        activityItem.innerHTML = `
+                            <div class="activity-icon">
+                                <i class="fas ${activity.icon}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">${activity.title}</div>
+                                <div class="activity-desc">${activity.desc}</div>
+                                <div class="activity-time">${activity.time}</div>
+                            </div>
+                            <div class="activity-status ${activity.status}">${activity.status.replace('-', ' ')}</div>
+                        `;
+                        activityFeed.appendChild(activityItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading recent activity:', error);
+                });
+        }
+
+        // Load system status from API
+        function loadSystemStatus() {
+            fetch('/api/dashboard/system-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error fetching system status:', data.error);
+                        return;
+                    }
+
+                    // Update ML Model status
+                    const mlStatusCard = document.querySelector('.status-card:nth-child(1)');
+                    if (mlStatusCard && data.ml_model) {
+                        const statusIcon = mlStatusCard.querySelector('.status-icon');
+                        const statusContent = mlStatusCard.querySelector('.status-content p');
+                        const statusBadge = mlStatusCard.querySelector('.status-badge');
+                        
+                        if (data.ml_model.active) {
+                            statusIcon.className = 'status-icon success';
+                            statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                            statusContent.textContent = 'Operational';
+                            statusBadge.textContent = 'Active';
+                            statusBadge.className = 'status-badge success';
+                        } else {
+                            statusIcon.className = 'status-icon error';
+                            statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                            statusContent.textContent = 'Error';
+                            statusBadge.textContent = 'Error';
+                            statusBadge.className = 'status-badge error';
+                        }
+                    }
+
+                    // Update Database status
+                    const dbStatusCard = document.querySelector('.status-card:nth-child(2)');
+                    if (dbStatusCard && data.database) {
+                        const statusIcon = dbStatusCard.querySelector('.status-icon');
+                        const statusContent = dbStatusCard.querySelector('.status-content p');
+                        const statusBadge = dbStatusCard.querySelector('.status-badge');
+                        
+                        if (data.database.online) {
+                            statusIcon.className = 'status-icon success';
+                            statusIcon.innerHTML = '<i class="fas fa-database"></i>';
+                            statusContent.textContent = 'Connected';
+                            statusBadge.textContent = 'Online';
+                            statusBadge.className = 'status-badge success';
+                        } else {
+                            statusIcon.className = 'status-icon error';
+                            statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                            statusContent.textContent = 'Disconnected';
+                            statusBadge.textContent = 'Offline';
+                            statusBadge.className = 'status-badge error';
+                        }
+                    }
+
+                    // Update Uptime status
+                    const uptimeStatusCard = document.querySelector('.status-card:nth-child(4)');
+                    if (uptimeStatusCard && data.uptime) {
+                        const statusContent = uptimeStatusCard.querySelector('.status-content p');
+                        statusContent.textContent = data.uptime.percentage + '%';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading system status:', error);
+                });
+        }
+
+        // Initialize dashboard with real data
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.stat-card, .action-card, .status-card');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+                element.style.animation = 'slideUp 0.8s ease-out forwards';
+            });
+
+            // Load real data
+            loadRecentActivity();
+            loadSystemStatus();
+            setInterval(loadRecentActivity, 60000); // Update every minute
+            setInterval(loadSystemStatus, 120000); // Update every 2 minutes
+        });
+
+
+
+        // Add real-time activity updates
+        function addActivityItem(title, desc, time, status, icon) {
+            const activityFeed = document.querySelector('.activity-feed');
+            if (!activityFeed) return;
+
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <div class="activity-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${title}</div>
+                    <div class="activity-desc">${desc}</div>
+                    <div class="activity-time">${time}</div>
+                </div>
+                <div class="activity-status ${status}">${status.replace('-', ' ')}</div>
+            `;
+
+            activityFeed.insertBefore(activityItem, activityFeed.firstChild);
+
+            // Remove oldest item if more than 5 items
+            const items = activityFeed.querySelectorAll('.activity-item');
+            if (items.length > 5) {
+                activityFeed.removeChild(items[items.length - 1]);
+            }
+        }
+
+        // Remove the old simulated activity updates - now using real API data
+    </script>
+</body>
+</html> 

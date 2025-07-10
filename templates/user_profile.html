@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Churn Prediction System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            color: #222;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.08;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 15px,
+                rgba(255, 255, 255, 0.1) 15px,
+                rgba(255, 255, 255, 0.1) 30px
+            );
+            animation: move 25s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .profile-wrapper {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .profile-card {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(102,126,234,0.15);
+            padding: 3.5rem 2.5rem 2.5rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            animation: slideUp 1s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(30px);
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(102,126,234,0.3);
+            animation: pulse 3s infinite;
+            position: relative;
+        }
+
+        .profile-avatar::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.3;
+            animation: pulse 3s infinite 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .profile-avatar i {
+            color: #fff;
+            font-size: 3.5rem;
+        }
+
+        .profile-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .profile-username {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-role {
+            color: #666;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 2.5rem;
+            padding: 0.5rem 1.5rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .profile-details {
+            margin-bottom: 2.5rem;
+            width: 100%;
+        }
+
+        .profile-detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .profile-detail-item:hover {
+            background: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .profile-label {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .profile-label i {
+            color: #667eea;
+            font-size: 1.1rem;
+            width: 20px;
+        }
+
+        .profile-value {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .profile-edit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-edit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .profile-edit-btn:hover::before {
+            left: 100%;
+        }
+
+        .profile-edit-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 15px 35px rgba(102,126,234,0.4);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .profile-settings-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .profile-settings-btn:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+            box-shadow: 0 15px 35px rgba(108, 117, 125, 0.4);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        .back-btn-container {
+            text-align: center;
+            margin-top: 2.5rem;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+            box-shadow: 0 15px 35px rgba(108, 117, 125, 0.4);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .profile-wrapper {
+                padding: 1.5rem;
+            }
+
+            .profile-card {
+                padding: 2.5rem 2rem;
+            }
+
+            .profile-username {
+                font-size: 2rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-avatar i {
+                font-size: 3rem;
+            }
+
+            .profile-detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .profile-value {
+                text-align: left;
+            }
+
+            .profile-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .profile-edit-btn, .profile-settings-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-wrapper {
+                padding: 1rem;
+            }
+
+            .profile-card {
+                padding: 2rem 1.5rem;
+                border-radius: 16px;
+            }
+
+            .profile-username {
+                font-size: 1.8rem;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+            }
+
+            .profile-avatar i {
+                font-size: 2.5rem;
+            }
+
+            .profile-role {
+                font-size: 1rem;
+            }
+
+            .profile-detail-item {
+                padding: 0.8rem 1rem;
+            }
+
+            .profile-label, .profile-value {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+
+    <div class="profile-wrapper">
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="profile-info">
+                <h2 class="profile-username">{{ user.username }}</h2>
+                <div class="profile-role">
+                    <i class="fas fa-shield-alt"></i> System Administrator
+                </div>
+                <div class="profile-details">
+                    <div class="profile-detail-item">
+                        <span class="profile-label">
+                            <i class="fas fa-id-badge"></i> User ID
+                        </span>
+                        <span class="profile-value">{{ user.user_id }}</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <span class="profile-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </span>
+                        <span class="profile-value">{{ user.email }}</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <span class="profile-label">
+                            <i class="fas fa-calendar-alt"></i> Member Since
+                        </span>
+                        <span class="profile-value">January 2024</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <span class="profile-label">
+                            <i class="fas fa-clock"></i> Last Login
+                        </span>
+                        <span class="profile-value">Today, 2:30 PM</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <span class="profile-label">
+                            <i class="fas fa-shield-alt"></i> Account Status
+                        </span>
+                        <span class="profile-value">
+                            <span class="status-badge">
+                                <i class="fas fa-check-circle"></i> Active
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-edit-btn" onclick="alert('Edit feature coming soon!')">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                    <a href="#" class="profile-settings-btn" onclick="alert('Settings feature coming soon!')">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="back-btn-container">
+            <a href="{{ url_for('dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth hover effects
+        document.querySelectorAll('.profile-detail-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add loading animation for page elements
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.profile-detail-item');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+                element.style.animation = 'slideUp 0.8s ease-out forwards';
+            });
+        });
+    </script>
+</body>
+</html> 

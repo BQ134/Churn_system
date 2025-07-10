@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churn Prediction - Churn System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            min-height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            color: #222;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.08;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 15px,
+                rgba(255, 255, 255, 0.1) 15px,
+                rgba(255, 255, 255, 0.1) 30px
+            );
+            animation: move 25s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .main-wrapper {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .prediction-card, .result-card {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(102,126,234,0.15);
+            margin: 2rem 0 1.5rem 0;
+            padding: 3rem 2.5rem 2.5rem 2.5rem;
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(30px);
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .prediction-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .prediction-header .header-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 2.2rem;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .prediction-header h2 {
+            color: #333;
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .prediction-header p {
+            color: #666;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-group label {
+            margin-bottom: 0.8rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group label i {
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            max-width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            font-weight: 500;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+            background: #fff;
+            transform: translateY(-2px);
+        }
+
+        .form-group .help-text {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 25px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 15px 35px rgba(102,126,234,0.4);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .back-btn-container {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: #fff;
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 1.2rem 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.98);
+            padding: 3rem 2.5rem 2.5rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(102,126,234,0.15);
+            max-width: 600px;
+            width: 100%;
+            margin: 2rem auto 0 auto;
+            display: none;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-header h3 {
+            color: #333;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-status {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .result-status.churn {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .result-status.stay {
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .result-details {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .result-details h4 {
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .result-details p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-score {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                padding: 1.5rem;
+            }
+
+            .prediction-card, .result-card {
+                padding: 2rem 1.5rem;
+                margin: 1.5rem 0;
+            }
+
+            .prediction-header h2 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .submit-btn {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-wrapper {
+                padding: 1rem;
+            }
+
+            .prediction-card, .result-card {
+                padding: 1.5rem 1rem;
+                border-radius: 16px;
+            }
+
+            .prediction-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .prediction-header .header-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+
+            .form-group input {
+                padding: 0.9rem 1rem;
+                font-size: 0.95rem;
+            }
+
+            .submit-btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+
+    <div class="main-wrapper">
+        <div class="prediction-card">
+            <div class="prediction-header">
+                <div class="header-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h2>Churn Prediction</h2>
+                <p>Enter customer data to predict the likelihood of churn using our advanced machine learning model</p>
+            </div>
+
+            <form id="predictionForm" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="REGULARITY"><i class="fas fa-chart-line"></i> Regularity</label>
+                        <input type="number" id="REGULARITY" name="REGULARITY" required step="0.01" min="0">
+                        <div class="help-text">Customer's regularity score</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="REVENUE"><i class="fas fa-dollar-sign"></i> Revenue</label>
+                        <input type="number" id="REVENUE" name="REVENUE" required step="0.01" min="0">
+                        <div class="help-text">Total revenue from customer</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="AVERAGE_REVENUE_PER_USER"><i class="fas fa-coins"></i> Average Revenue Per User</label>
+                        <input type="number" id="AVERAGE_REVENUE_PER_USER" name="AVERAGE_REVENUE_PER_USER" required step="0.01" min="0">
+                        <div class="help-text">Average revenue per user</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="FREQUENCE"><i class="fas fa-sync-alt"></i> Frequency</label>
+                        <input type="number" id="FREQUENCE" name="FREQUENCE" required step="0.01" min="0">
+                        <div class="help-text">Customer's usage frequency</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="DATA_VOLUME"><i class="fas fa-database"></i> Data Volume</label>
+                        <input type="number" id="DATA_VOLUME" name="DATA_VOLUME" required step="0.01" min="0">
+                        <div class="help-text">Data usage volume</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="FREQUENCE_RECH"><i class="fas fa-redo"></i> Recharge Frequency</label>
+                        <input type="number" id="FREQUENCE_RECH" name="FREQUENCE_RECH" required step="0.01" min="0">
+                        <div class="help-text">Frequency of recharges</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="TOTAL_AMOUNT_SPENT"><i class="fas fa-wallet"></i> Total Amount Spent</label>
+                        <input type="number" id="TOTAL_AMOUNT_SPENT" name="TOTAL_AMOUNT_SPENT" required step="0.01" min="0">
+                        <div class="help-text">Total amount spent by customer</div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-magic"></i> Predict Churn
+                </button>
+            </form>
+
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Analyzing customer data...</p>
+            </div>
+
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span>
+            </div>
+        </div>
+
+        <div class="result-card">
+            <div class="result-header">
+                <h3>Prediction Result</h3>
+            </div>
+            <div class="result-status" id="resultStatus"></div>
+            <div class="result-details">
+                <h4>Analysis Summary</h4>
+                <p id="resultDescription"></p>
+            </div>
+            <div class="action-buttons" style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('reports') }}" class="action-btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 0.9rem 2rem; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                    <i class="fas fa-chart-bar"></i> View Reports
+                </a>
+                <button type="button" class="action-btn" onclick="window.location.reload()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.9rem 2rem; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <i class="fas fa-redo"></i> Make New Prediction
+                </button>
+            </div>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="{{ url_for('dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.querySelector('.loading').style.display = 'block';
+            document.querySelector('.error-message').style.display = 'none';
+            document.querySelector('.result-card').style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Submit form
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('.loading').style.display = 'none';
+                
+                if (data.error) {
+                    document.getElementById('errorText').textContent = data.error;
+                    document.querySelector('.error-message').style.display = 'block';
+                } else {
+                    // Show result
+                    const resultCard = document.querySelector('.result-card');
+                    const resultStatus = document.getElementById('resultStatus');
+                    const resultDescription = document.getElementById('resultDescription');
+                    
+                    if (data.prediction === 1) {
+                        resultStatus.textContent = 'HIGH CHURN RISK';
+                        resultStatus.className = 'result-status churn';
+                        resultDescription.textContent = 'This customer shows signs of potential churn. Consider implementing retention strategies such as personalized offers, improved customer service, or feature upgrades.';
+                    } else {
+                        resultStatus.textContent = 'LOW CHURN RISK';
+                        resultStatus.className = 'result-status stay';
+                        resultDescription.textContent = 'This customer appears to be satisfied and has a low risk of churning. Continue providing excellent service to maintain their loyalty.';
+                    }
+                    
+                    resultCard.style.display = 'block';
+                    
+                    // Scroll to result
+                    resultCard.scrollIntoView({ behavior: 'smooth' });
+                }
+            })
+            .catch(error => {
+                document.querySelector('.loading').style.display = 'none';
+                document.getElementById('errorText').textContent = 'An error occurred while processing your request. Please try again.';
+                document.querySelector('.error-message').style.display = 'block';
+            });
+        });
+
+        // Add smooth focus effects
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html> 
